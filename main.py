@@ -15,7 +15,7 @@ logger = logging.getLogger()
 log_path = os.path.join(os.getcwd(), "log/").replace("\\", "/")
 log_file = log_path + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
 logging.info("Log registered in \"" + log_file + "\"")
-logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.WARNING,
+logging.basicConfig(filename=log_file, encoding="utf-8", level=logging.WARNING,
                     format="%(asctime)s [%(levelname)s] %(message)s", force=True)
 
 res_path = os.path.join(os.getcwd(), "res/").replace("\\", "/")
@@ -46,13 +46,13 @@ def compress_docs():
     pdf_files = get_files(doc_path, ".pdf")
 
     for p_input in pdf_files:
-        p_output = os.path.join(doc_comp, p_input).replace("\\", "/")
+        p_output = os.path.join(doc_comp, p_input.split("/")[-1]).replace("\\", "/")
+        print(p_output)
         compress(input_file_path=p_input, output_file_path=p_output, power=3)
 
         # Si el fichero generado es más reducido, reemplaza el original y, en caso contrario, lo elimina.
-        file_move(p_output, p_input, True) if os.stat(p_output).st_size < os.stat(p_input).st_size else \
-            os.remove(p_output)
-        exit(0)
+        file_move(p_output, p_input, True) if os.stat(p_output).st_size < os.stat(p_input).st_size else os.remove(
+            p_output)
 
 
 def get_files(p_path, p_ext):
@@ -135,7 +135,7 @@ def get_docs(p_data):
 
         file_path = os.path.join(doc_path, file_name).replace("\\", "/")
 
-        proxies = {'http': 'socks5://127.0.0.1:7890'}
+        proxies = {"http": "socks5://127.0.0.1:7890"}
 
         # Si la entrada no tiene DOI, se descarta
         if not pd.isna(row["DOI"]):
@@ -176,7 +176,7 @@ def generate_register(p_data, p_folder, p_ext=".csv", p_sep=None):
     for idx, p_file in enumerate(files):
         sys.stdout.write("\r> (%d/%d) Leyendo fichero \"%s\"" % (idx + 1, len(files), p_file))
         file_data = pd.read_csv(p_file) if p_sep is None else pd.read_csv(p_file, sep=p_sep)
-        file_data.insert(0, 'RES path', "")
+        file_data.insert(0, "RES path", "")
         file_data["RES path"] = [p_file] * len(file_data)
         p_data = file_data if p_data is None else pd.concat([p_data, file_data], ignore_index=True)
 
@@ -209,8 +209,8 @@ def main():
             concat_data = remove_duplicates(p_data=concat_data, p_discard_col="RES path")
             concat_data = concat_data[["RES path", "TI", "PY", "AU", "DI"]]
             concat_data.rename(columns={"TI": "Title", "PY": "Year", "AU": "Authors", "DI": "DOI"}, inplace=True)
-            concat_data['Authors'] = concat_data['Authors'].str.split(', ').str[0]
-            concat_data['Year'] = concat_data['Year'].astype('int')
+            concat_data["Authors"] = concat_data["Authors"].str.split(", ").str[0]
+            concat_data["Year"] = concat_data["Year"].astype("int")
 
         elif "scopus" in folder:
             print("\nLectura de referencias SCOPUS")
@@ -219,9 +219,9 @@ def main():
 
             concat_data = remove_duplicates(p_data=concat_data, p_discard_col="RES path")
             concat_data = concat_data[["RES path", "Title", "Year", "Authors", "DOI"]]
-            concat_data['Authors'] = concat_data['Authors'].str.split(', ').str[0]
-            concat_data['Authors'] = concat_data['Authors'].replace("[No author name available]", "unknown")
-            concat_data['Year'] = concat_data['Year'].astype('int')
+            concat_data["Authors"] = concat_data["Authors"].str.split(", ").str[0]
+            concat_data["Authors"] = concat_data["Authors"].replace("[No author name available]", "unknown")
+            concat_data["Year"] = concat_data["Year"].astype("int")
 
         elif "ieee" in folder:
             print("\nLectura de referencias IEEE")
@@ -231,8 +231,8 @@ def main():
             concat_data = remove_duplicates(p_data=concat_data, p_discard_col="RES path")
             concat_data = concat_data[["RES path", "Document Title", "Publication Year", "Authors", "DOI"]]
             concat_data.rename(columns={"Document Title": "Title", "Publication Year": "Year"}, inplace=True)
-            concat_data['Authors'] = concat_data['Authors'].str.split('; ').str[0].str.split('. ').str[-1]
-            concat_data['Year'] = concat_data['Year'].astype('int')
+            concat_data["Authors"] = concat_data["Authors"].str.split("; ").str[0].str.split(". ").str[-1]
+            concat_data["Year"] = concat_data["Year"].astype("int")
 
         concat_lists.append(concat_data)
 
@@ -246,7 +246,7 @@ def main():
     concat_data["doc_title"] = lista
     concat_data = remove_duplicates(p_data=concat_data, p_subset="doc_title")
     concat_data = concat_data[["RES path", "Title", "Year", "Authors", "DOI"]].sort_values(
-        by=['Year', 'Title']).reset_index(drop=True)
+        by=["Year", "Title"]).reset_index(drop=True)
 
     # Ordena y almacena el estado actual
     concat_data.to_csv(os.path.join(res_path, csv_file).replace("\\", "/"),
@@ -276,5 +276,5 @@ def main():
     compress_docs()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
